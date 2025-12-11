@@ -18,6 +18,5 @@
 
 
 void fn_MAKING_MOVE(void){
-
     current_state=STATE_WAITING_FOR_MOVE;
 }

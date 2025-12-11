@@ -16,3 +16,6 @@ Move_t move_to_make;
 // variable that holds the current state of the state machine
 // initialized to the init state
 State_t current_state = STATE_INIT;
+
+//variable that holds the current state of the game board, must be initialized with Board_init() before use
+Board_t game_board;

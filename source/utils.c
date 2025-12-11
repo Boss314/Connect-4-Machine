@@ -12,12 +12,12 @@
 #include "stdbool.h"
 
 
-bool Board_find_diagonals(const Board_t * board,uint8_t c,Row_t r, bool rising,bool * winner);
+bool Board_find_diagonals(const Board_t * board,uint8_t c,Row_t r, const bool rising,bool * winner);
 
 
 void Board_init(Board_t * board){
     int i;
-    for(i=0;i<7;i++){
+    for(i=0;i<NUM_COLS;i++){
         board->column[i]=0;
         board->next_row[i]=ROW1; // since each column is empty the next piece will have to be placed in the first row
     }
@@ -25,7 +25,7 @@ void Board_init(Board_t * board){
 
 
 
-bool Board_make_move(Board_t* board,Move_t move,bool is_computer){
+bool Board_make_move(Board_t* board,const Move_t move,const bool is_computer){
     if(board->next_row[move] > ROW6){
         // if the selected column is full then the move is illegal
         return false;
@@ -45,7 +45,7 @@ bool Board_make_move(Board_t* board,Move_t move,bool is_computer){
 
 
 
-bool Board_unmake_move(Board_t* board,Move_t move){
+bool Board_unmake_move(Board_t* board,const Move_t move){
     if(board->next_row[move] == ROW1){
         // if the selected column is empty there is no move to roll back
         return false;
@@ -61,11 +61,11 @@ bool Board_unmake_move(Board_t* board,Move_t move){
 
 bool Board_has_won(const Board_t * board, bool * winner){
     int c;
-    Row_t r;
+    int r;
 
 
     //check for vertical lines in each column
-    for(c=0;c<7;c++){
+    for(c=0;c<NUM_COLS;c++){
         uint8_t count=0; //use thios variable to count how many connected identical pieces we have seen, when we reach 4 we know there is a vertical line
         *winner=true; //use this variable to temporarily store the player whose pieces we are currently counting
 
@@ -98,7 +98,7 @@ bool Board_has_won(const Board_t * board, bool * winner){
         uint8_t count=0;
         *winner=true;
 
-        for(c=0;c<7;c++){
+        for(c=0;c<NUM_COLS;c++){
             if(board->next_row[c] <= r){// case where the current column does not have a piece in that row
                 count=0;
             }else{
@@ -160,11 +160,11 @@ bool Board_has_won(const Board_t * board, bool * winner){
 }
 
 
-bool Board_find_diagonals(const Board_t * board,uint8_t c,Row_t r, bool rising,bool * winner){
+bool Board_find_diagonals(const Board_t * board,uint8_t c,Row_t r, const bool rising,bool * winner){
     uint8_t count=0;
     *winner=true;
 
-    while(c<7 && r>=ROW1 && r<=ROW6){
+    while(c<NUM_COLS && r>=ROW1 && r<=ROW6){
         if(board->next_row[c] <= r){// case where the current column does not have a piece in that row
             count=0;
         }else{
