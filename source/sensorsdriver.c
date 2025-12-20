@@ -23,7 +23,7 @@ typedef struct{
 const Sensor_t sensors[NUM_COLS] = {
                              {GPIO_PORT_P2,GPIO_PIN7,COL1},
                              {GPIO_PORT_P2,GPIO_PIN6,COL2},
-                             {GPIO_PORT_P2,GPIO_PIN5,COL3},
+                             {GPIO_PORT_P2,GPIO_PIN3,COL3},
                              {GPIO_PORT_P2,GPIO_PIN4,COL4},
                              {GPIO_PORT_P3,GPIO_PIN0,COL5},
                              {GPIO_PORT_P5,GPIO_PIN6,COL6},
@@ -107,7 +107,7 @@ void disable_interrupts(){
  * to do this we make each interrupt routine disable all the sensor interrupts using diable_interrupts(), so that only one routine can happen at a time
  */
 
-void PORT2_IRQhandler(void){
+void PORT2_IRQHandler(void){
     /* Check which pins generated the interrupts */
     uint_fast16_t status = GPIO_getEnabledInterruptStatus(GPIO_PORT_P2);
     /* clear interrupt flag (to clear pending interrupt indicator */
@@ -128,7 +128,7 @@ void PORT2_IRQhandler(void){
     disable_interrupts();
 }
 
-void PORT3_IRQhandler(void){
+void PORT3_IRQHandler(void){
     /* Check which pins generated the interrupts */
     uint_fast16_t status = GPIO_getEnabledInterruptStatus(GPIO_PORT_P3);
     /* clear interrupt flag (to clear pending interrupt indicator */
@@ -149,7 +149,7 @@ void PORT3_IRQhandler(void){
     disable_interrupts();
 }
 
-void PORT5_IRQhandler(void){
+void PORT5_IRQHandler(void){
     /* Check which pins generated the interrupts */
     uint_fast16_t status = GPIO_getEnabledInterruptStatus(GPIO_PORT_P5);
     /* clear interrupt flag (to clear pending interrupt indicator */

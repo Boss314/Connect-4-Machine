@@ -26,35 +26,31 @@ void Board_init(Board_t * board){
 
 
 bool Board_make_move(Board_t* board,const Move_t move,const bool is_computer){
-    if(board->next_row[move] > ROW6){
-        // if the selected column is full then the move is illegal
-        return false;
+    if(move>=NUM_COLS) return false; //if the selected column is invalid the move is illegal
+    if(board->next_row[move] > ROW6) return false;// if the selected column is full then the move is illegal
+
+
+    if(is_computer){
+        board->column[move] |= board->next_row[move]; //set the bit in the lowest empty row to 1
     }else{
-
-        if(is_computer){
-            board->column[move] |= board->next_row[move]; //set the bit in the lowest empty row to 1
-        }else{
-            board->column[move] &= ~board->next_row[move]; //set the bit in the lowest empty row to 0
-        }
-
-        board->next_row[move] = board->next_row[move] << 1; //the next row is now the one above where we just placed our piece
-
-        return true;
+        board->column[move] &= ~board->next_row[move]; //set the bit in the lowest empty row to 0
     }
+
+    board->next_row[move] = board->next_row[move] << 1; //the next row is now the one above where we just placed our piece
+
+    return true;
 }
 
 
 
 bool Board_unmake_move(Board_t* board,const Move_t move){
-    if(board->next_row[move] == ROW1){
-        // if the selected column is empty there is no move to roll back
-        return false;
-    }else{
+    if(move>=NUM_COLS) return false; //if the selected column is invalid the move is illegal
+    if(board->next_row[move] == ROW1) return false;// if the selected column is empty there is no move to roll back
 
-        board->next_row[move] = board->next_row[move] >> 1; // we took out a piece from the column, so the next row is now the one right below
 
-        return true;
-    }
+    board->next_row[move] = board->next_row[move] >> 1; // we took out a piece from the column, so the next row is now the one right below
+
+    return true;
 }
 
 

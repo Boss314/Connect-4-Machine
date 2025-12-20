@@ -52,7 +52,7 @@ typedef uint8_t Row_t;
  *           fall if it was placed in the i-th column (from the left), it is the lowest row in that column that doesnt have a piece in it,
  *           all lower rows are guaranteed to have pieces in them and all higher rows are guaranteed to be empty
  *
- * NOTE: the values of the bits in any column[i] field are only defined up to (and not including) the row indicated in pieces_placed[i], all higher
+ * NOTE: the values of the bits in any column[i] field are only defined up to (and not including) the row indicated in next_row[i], all higher
  *       bits should never be considered because they correspond to places where there are no pieces
  */
 typedef struct{
