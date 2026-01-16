@@ -89,4 +89,34 @@ typedef struct{
 } StateMachine_t;
 
 
+
+// typedef for the format of a digit/letter as displayed on the 7 segment display, each bit corresponds to a different segment, 1 for on and 0 for off
+typedef uint8_t SevenSegment_t;
+/*  what bits correspond to what segments is determined by the exact wiring of the circuit the display is on, and by the way the bits are inserted in the 74hc595 shift register
+ *  the mapping currently looks like this, with 0 being the least significant bit and 7 being the most significant
+ *
+ *    --5--
+ *   |     |
+ *   4     6
+ *   |     |
+ *    --3--
+ *   |     |
+ *   2     7
+ *   |     |
+ *    --1--
+ */                                                 //76543210
+#define SEVEN_SEGMENT_BLANK         (SevenSegment_t)0b00000000
+#define SEVEN_SEGMENT_ZERO          (SevenSegment_t)0b11110110
+#define SEVEN_SEGMENT_ONE           (SevenSegment_t)0b11000000
+#define SEVEN_SEGMENT_TWO           (SevenSegment_t)0b01101110
+#define SEVEN_SEGMENT_THREE         (SevenSegment_t)0b11101010
+#define SEVEN_SEGMENT_FOUR          (SevenSegment_t)0b11011000
+#define SEVEN_SEGMENT_FIVE          (SevenSegment_t)0b10111010
+#define SEVEN_SEGMENT_SIX           (SevenSegment_t)0b10111110
+#define SEVEN_SEGMENT_SEVEN         (SevenSegment_t)0b11100000
+#define SEVEN_SEGMENT_EIGHT         (SevenSegment_t)0b11111110
+#define SEVEN_SEGMENT_NINE          (SevenSegment_t)0b11111010
+
+
+
 #endif /* TYPES_H_ */

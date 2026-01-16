@@ -52,11 +52,13 @@ void fn_WAITING_FOR_MOVE(void){
 
     //check if the player won and decide the next state
     bool winner;
-    if(Board_has_won(&game_board, &winner)){
+    bool isfinished=Board_has_won(&game_board, &winner);
+    if(isfinished){
         if(!winner){
             current_state=STATE_PLAYER_VICTORY;
         }else{
             //some kind of error, the player just made a move but the computer won
+            //Default_Handler();
         }
     }else{
         current_state=STATE_CALCULATING_MOVE;
@@ -77,6 +79,29 @@ void Sensors_init(void){
     Interrupt_enableInterrupt(INT_PORT3);
     Interrupt_enableInterrupt(INT_PORT5);
     Interrupt_enableMaster(); //just in case interrupts arent enabled we enable them
+}
+
+
+void Sensors_request_piece(Col_t column){
+    Sensor_t sensor;
+
+    int i;
+    for(i=0;i<NUM_COLS;i++){ // find the sensor that corresponds to the requested column
+        if(sensors[i].column == column){
+            sensor=sensors[i];
+            break;
+        }
+    }
+
+    //enable the interrupt on that sensor
+    GPIO_clearInterruptFlag(sensor.port, sensor.pin);
+    GPIO_enableInterrupt(sensor.port, sensor.pin);
+
+    //go to sleep
+    PCM_gotoLPM0();
+
+    //when we exit from sleep it mean the sensor detected a move on the requested column
+    return;
 }
 
 

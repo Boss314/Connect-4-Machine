@@ -1,5 +1,7 @@
+#include <ti/devices/msp432p4xx/driverlib/driverlib.h>
+#include <include/displaycontroller.h>
+#include "include/utils.h"
 #include "include/connect4algorithm.h"
-#include "include/servocontroller.h"
 #include "include/sensorsdriver.h"
 #include "include/types.h"
 #include "msp.h"
@@ -26,7 +28,12 @@ StateMachine_t fsm[] = {
 };
 
 void fn_INIT(){
+    Sensors_init();
+    Display_init();
 
+    Board_init(&game_board);
+
+    current_state=STATE_WAITING_FOR_MOVE;
 }
 
 void fn_PLAYER_VICTORY(){
