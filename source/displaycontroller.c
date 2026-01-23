@@ -16,7 +16,7 @@
 #include "include/displaycontroller.h"
 #include "include/types.h"
 #include "include/sensorsdriver.h"
-#include "include/utils.h"
+#include "include/board.h"
 
 // array of the display elements so they can be accessed by indexing with move_to_make
 SevenSegment_t digits[NUM_COLS]={

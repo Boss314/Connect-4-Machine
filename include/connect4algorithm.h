@@ -18,6 +18,7 @@ extern Move_t move_to_make;
 //function that updates the value of move_to_make with the move calculated by the algorithm, puts the machine in its next state, and then returns control to main
 void fn_CALCULATING_MOVE(void);
 
-
+//
+Score_t score_contribution(Board_t *board, Col_t column, Row_t row);
 
 #endif /* CONNECT4ALGORITHM_H_ */

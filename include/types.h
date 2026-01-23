@@ -43,6 +43,12 @@ typedef uint8_t Row_t;
 #define ROW8 (uint8_t)(0x80)
 
 
+// typedef for the datatype used to memorize the score of a particular connect 4 board
+// maximum value means a state of victory for the computer, minimum value means victory for the player
+typedef int16_t Score_t;
+#define SCORE_MIN INT16_MIN
+#define SCORE_MAX INT16_MAX
+
 
 /* struct type to indicate the state of a connect 4 board
  * column: an array of 7 uint8_t used as bitfields, the j-th lowest bit of column[i] identifies the piece present in the j-th row (from the
@@ -52,12 +58,16 @@ typedef uint8_t Row_t;
  *           fall if it was placed in the i-th column (from the left), it is the lowest row in that column that doesnt have a piece in it,
  *           all lower rows are guaranteed to have pieces in them and all higher rows are guaranteed to be empty
  *
+ * score: variable that contain the score of the game board's state, used by the minimax algorithm. if the score is the maximum value
+ *        then the board is in a state where the computer has won, if the score is the minimum value then the player has won
+ *
  * NOTE: the values of the bits in any column[i] field are only defined up to (and not including) the row indicated in next_row[i], all higher
  *       bits should never be considered because they correspond to places where there are no pieces
  */
 typedef struct{
     Col_t column[NUM_COLS];
     Row_t next_row[NUM_COLS];
+    Score_t score;
 } Board_t;
 
 

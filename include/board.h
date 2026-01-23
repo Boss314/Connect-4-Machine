@@ -1,11 +1,11 @@
 /*
- * utils.h
+ * board.h
  *
  *  Created on: Dec 2, 2025
  *      Author: enrico
  */
 
-#include "types.h"
+#include <include/types.h>
 #include "stdbool.h"
 
 
@@ -34,13 +34,7 @@ bool Board_make_move(Board_t * board,Move_t move,bool is_computer);
  */
 bool Board_unmake_move(Board_t * board,Move_t move);
 
-/* function to check the game has been won, that is, to check if the board contains four pieces in a line all belonging to either the player or the computer
- *      Board_t * board:     board to check for victory, passed by reference
- *      bool * is_computer   true if the game has been won by the computer, false if the game has been won by the player
- *
- *      returns bool:        true if the game has been won either by the player or the computer, false otherwise
- */
-bool Board_has_won(const Board_t * board, bool * winner);
+
 
 
 #endif /* INCLUDE_UTILS_H_ */

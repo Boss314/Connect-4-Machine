@@ -1,6 +1,6 @@
+#include <include/board.h>
 #include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 #include <include/displaycontroller.h>
-#include "include/utils.h"
 #include "include/connect4algorithm.h"
 #include "include/sensorsdriver.h"
 #include "include/types.h"

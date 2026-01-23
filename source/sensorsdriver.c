@@ -5,10 +5,13 @@
  *      Author: enrico
  */
 
+
 #include <ti/devices/msp432p4xx/driverlib/driverlib.h>
+#include "include/board.h"
 #include "include/sensorsdriver.h"
-#include "include/utils.h"
+#include "include/connect4algorithm.h"
 #include "stdbool.h"
+
 
 
 
@@ -20,14 +23,15 @@ typedef struct{
 } Sensor_t;
 
 //array of the pins all the sensors are connected to
+// next to them are the pins they correspond to on the boosterpack
 const Sensor_t sensors[NUM_COLS] = {
-                             {GPIO_PORT_P2,GPIO_PIN7,COL1},
-                             {GPIO_PORT_P2,GPIO_PIN6,COL2},
-                             {GPIO_PORT_P2,GPIO_PIN3,COL3},
-                             {GPIO_PORT_P2,GPIO_PIN4,COL4},
-                             {GPIO_PORT_P3,GPIO_PIN0,COL5},
-                             {GPIO_PORT_P5,GPIO_PIN6,COL6},
-                             {GPIO_PORT_P5,GPIO_PIN7,COL7}
+                             {GPIO_PORT_P3,GPIO_PIN6,COL1}, //J2.11
+                             {GPIO_PORT_P3,GPIO_PIN0,COL2}, //J2.18
+                             {GPIO_PORT_P5,GPIO_PIN2,COL3}, //J2.12
+                             {GPIO_PORT_P6,GPIO_PIN6,COL4}, //J4.36
+                             {GPIO_PORT_P6,GPIO_PIN7,COL5}, //J4.35
+                             {GPIO_PORT_P2,GPIO_PIN3,COL6}, //J4.34
+                             {GPIO_PORT_P4,GPIO_PIN6,COL7}  //J1.8
 };
 
 // global variable used only in this file that stores in what column a move from the player has been detected
@@ -38,7 +42,8 @@ volatile Move_t move_detected;
 void enable_interrupts();
 //function to disable all the interrupts on the sensor pins
 void disable_interrupts();
-
+//function that processes an interrupt triggered by a sensor, it gets called by the ISRs that pass it the port the interrupt came from
+void process_interrupt(uint_fast8_t port);
 
 void fn_WAITING_FOR_MOVE(void){
     //allow the sensors to trigger an interrupt
@@ -51,15 +56,11 @@ void fn_WAITING_FOR_MOVE(void){
     Board_make_move(&game_board, move_detected, false);
 
     //check if the player won and decide the next state
-    bool winner;
-    bool isfinished=Board_has_won(&game_board, &winner);
-    if(isfinished){
-        if(!winner){
-            current_state=STATE_PLAYER_VICTORY;
-        }else{
-            //some kind of error, the player just made a move but the computer won
-            //Default_Handler();
-        }
+    if(game_board.score==SCORE_MIN){
+        current_state=STATE_PLAYER_VICTORY;
+    }else if(game_board.score==SCORE_MAX){
+        // an error happened, the player just made a move but the computer won
+        //Default_Handler();
     }else{
         current_state=STATE_CALCULATING_MOVE;
     }
@@ -77,7 +78,9 @@ void Sensors_init(void){
     //enable the interrupts of the gpio ports, the most convenient way to do this is by hardcoding the interrupt numbers
     Interrupt_enableInterrupt(INT_PORT2);
     Interrupt_enableInterrupt(INT_PORT3);
+    Interrupt_enableInterrupt(INT_PORT4);
     Interrupt_enableInterrupt(INT_PORT5);
+    Interrupt_enableInterrupt(INT_PORT6);
     Interrupt_enableMaster(); //just in case interrupts arent enabled we enable them
 }
 
@@ -127,21 +130,20 @@ void disable_interrupts(){
 
 
 
-/* following here are the implementations of the interrupt routines triggered by the sensors
+/*
  * we should detect exactly one move for every time fn_WAITING_FOR_MOVE is called, so all the interrupt routines need mutual exclusion to the move_detected variable and to the Board_t variable
- * to do this we make each interrupt routine disable all the sensor interrupts using diable_interrupts(), so that only one routine can happen at a time
+ * to do this we make each interrupt routine disable all the sensor interrupts using disable_interrupts(), so that only one routine can happen at a time
  */
-
-void PORT2_IRQHandler(void){
+void process_interrupt(uint_fast8_t port){
     /* Check which pins generated the interrupts */
-    uint_fast16_t status = GPIO_getEnabledInterruptStatus(GPIO_PORT_P2);
+    uint_fast16_t status = GPIO_getEnabledInterruptStatus(port);
     /* clear interrupt flag (to clear pending interrupt indicator */
-    GPIO_clearInterruptFlag(GPIO_PORT_P2, status);
+    GPIO_clearInterruptFlag(port, status);
 
     //go through the list of the sensors to see which triggered the interrupt
     int i;
     for(i=0;i<NUM_COLS;i++){
-        if(sensors[i].port == GPIO_PORT_P2){ //only consider sensors belonging to this port
+        if(sensors[i].port == port){ //only consider sensors belonging to this port
             if(status & sensors[i].pin){ //check if that sensor's pin is the one that triggered
                 move_detected = sensors[i].column; //set the value of the move we detected
                 break;
@@ -151,46 +153,28 @@ void PORT2_IRQHandler(void){
 
     //block other sensors from triggering interrupts before returning
     disable_interrupts();
+}
+
+
+// following here are the implementations of the interrupt routines triggered by the sensors
+// each of them just calls the interrupt processing function passing it the port it came from
+
+void PORT2_IRQHandler(void){
+    process_interrupt(GPIO_PORT_P2);
 }
 
 void PORT3_IRQHandler(void){
-    /* Check which pins generated the interrupts */
-    uint_fast16_t status = GPIO_getEnabledInterruptStatus(GPIO_PORT_P3);
-    /* clear interrupt flag (to clear pending interrupt indicator */
-    GPIO_clearInterruptFlag(GPIO_PORT_P3, status);
+    process_interrupt(GPIO_PORT_P3);
+}
 
-    //go through the list of the sensors to see which triggered the interrupt
-    int i;
-    for(i=0;i<NUM_COLS;i++){
-        if(sensors[i].port == GPIO_PORT_P3){ //only consider sensors belonging to this port
-            if(status & sensors[i].pin){ //check if that sensor's pin is the one that triggered
-                move_detected = sensors[i].column; //set the value of the move we detected
-                break;
-            }
-        }
-    }
-
-    //block other sensors from triggering interrupts before returning
-    disable_interrupts();
+void PORT4_IRQHandler(void){
+    process_interrupt(GPIO_PORT_P4);
 }
 
 void PORT5_IRQHandler(void){
-    /* Check which pins generated the interrupts */
-    uint_fast16_t status = GPIO_getEnabledInterruptStatus(GPIO_PORT_P5);
-    /* clear interrupt flag (to clear pending interrupt indicator */
-    GPIO_clearInterruptFlag(GPIO_PORT_P5, status);
+    process_interrupt(GPIO_PORT_P5);
+}
 
-    //go through the list of the sensors to see which triggered the interrupt
-    int i;
-    for(i=0;i<NUM_COLS;i++){
-        if(sensors[i].port == GPIO_PORT_P5){ //only consider sensors belonging to this port
-            if(status & sensors[i].pin){ //check if that sensor's pin is the one that triggered
-                move_detected = sensors[i].column; //set the value of the move we detected
-                break;
-            }
-        }
-    }
-
-    //block other sensors from triggering interrupts before returning
-    disable_interrupts();
+void PORT6_IRQHandler(void){
+    process_interrupt(GPIO_PORT_P6);
 }

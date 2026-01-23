@@ -11,8 +11,8 @@
  */
 
 
+#include <include/types.h>
 #include "include/connect4algorithm.h"
-#include "include/types.h"
 
 
 
