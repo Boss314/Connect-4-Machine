@@ -32,7 +32,7 @@ typedef Col_t Move_t;
 // they are defined as powers of 2 so they can be used as bitmasks on the elements of the column field of Board_t
 // NOTE: an actual connect 4 board only has 6 rows
 typedef uint8_t Row_t;
-#define NUM_ROWS 6;
+#define NUM_ROWS 6
 #define ROW1 (uint8_t)(0x01)
 #define ROW2 (uint8_t)(0x02)
 #define ROW3 (uint8_t)(0x04)
@@ -99,6 +99,12 @@ typedef struct{
 } StateMachine_t;
 
 
+typedef enum {
+    GAME_COMPUTER_WON,
+    GAME_PLAYER_WON, 
+    GAME_DRAW,
+    GAME_ONGOING
+} GameState_t;
 
 // typedef for the format of a digit/letter as displayed on the 7 segment display, each bit corresponds to a different segment, 1 for on and 0 for off
 typedef uint8_t SevenSegment_t;

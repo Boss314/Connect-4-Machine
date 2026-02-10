@@ -16,12 +16,16 @@ typedef int16_t Score_t;
 #define SCORE_MAX INT16_MAX
 #define COL(x) ((uint8_t)((x)-1))
 
+
+/// to board.h
 typedef struct {
     uint8_t p1[NUM_COLS];   // bot
     uint8_t p2[NUM_COLS];   // player
     uint8_t height[NUM_COLS];
+    Score_t score;
 } Board_t;
 
+/// to algorithm.h
 typedef struct {
     Col_t move;
     Score_t score;
@@ -37,38 +41,23 @@ static const uint8_t DIRS[4] = {
 #define GET_DX(dir) ((int8_t)((dir) >> 4))
 #define GET_DY(dir) ((int8_t)(((dir) & 0x0F) - 1))
 
-// random number gen
-static uint16_t rand_seed = 12345;
-
-static inline uint8_t rand_col(void)
-{
-    rand_seed = (rand_seed * 1103515245 + 12345) & 0x7FFF;
-    return (uint8_t)(rand_seed % NUM_COLS);
-}
-
-static inline void set_rand_seed(uint16_t seed)
-{
-    rand_seed = seed;
-}
-
-/// Board 
-
-static inline void board_init(Board_t *b)
+/// to board.c
+void board_init(Board_t *b)
 {
     memset(b, 0, sizeof(Board_t));
 }
 
-static inline bool board_full(const Board_t *b)
+bool board_full(const Board_t *b)
 {
     // Check if all columns are full
-    uint8_t full = 0xFF;
-    for (uint8_t i = 0; i < NUM_COLS; i++) {
-        full &= (b->height[i] >= NUM_ROWS) ? 0xFF : 0;
+    Col_t i;
+    for (i = 0; i < NUM_COLS; i++) {
+        if (b->height[i] < NUM_ROWS) return false;
     }
-    return full;
+    return true;
 }
 
-static inline void drop_piece(Board_t *b, Col_t c, bool player)
+void drop_piece(Board_t *b, Col_t c, bool player, Score_t d)
 {
     uint8_t r = b->height[c];
     uint8_t mask = (1 << r);
@@ -77,9 +66,10 @@ static inline void drop_piece(Board_t *b, Col_t c, bool player)
     else 
         b->p2[c] |= mask;
     b->height[c]++;
+    b->score += d;
 }
 
-static inline void undo_piece(Board_t *b, Col_t c, bool player)
+void undo_piece(Board_t *b, Col_t c, bool player, Score_t d)
 {
     b->height[c]--;
     uint8_t r = b->height[c];
@@ -88,6 +78,7 @@ static inline void undo_piece(Board_t *b, Col_t c, bool player)
         b->p1[c] &= mask;
     else 
         b->p2[c] &= mask;
+    b-> score -= d;
 }
 
 /// Drawing 
@@ -109,8 +100,8 @@ void draw_board(Board_t *b)
 }
 
 /// Window delta 
-
-static inline Score_t eval_window(uint8_t p1, uint8_t p2, bool player)
+/// To algorithm.c
+Score_t eval_window(uint8_t p1, uint8_t p2, bool player)
 {
     // mixed
     if (p1 & p2) return 0;
@@ -146,8 +137,8 @@ Score_t delta_score(Board_t *b, Col_t col, int row, bool player)
 {
     Score_t total_delta = 0;
     Score_t delta;
-
-    for (int8_t d = 0; d < 4; d++) {
+    int8_t d, i;
+    for (d = 0; d < 4; d++) {
         uint8_t dir = DIRS[d];
         int8_t dx = GET_DX(dir);
         int8_t dy = GET_DY(dir);
@@ -157,7 +148,7 @@ Score_t delta_score(Board_t *b, Col_t col, int row, bool player)
         int8_t cells = 0;
 
         // counted first 3 cells 
-        for (int8_t i = 3; i > 0; i--) {
+        for (i = 3; i > 0; i--) {
             int8_t c = col - i * dx;
             int8_t r = row - i * dy;
             
@@ -171,15 +162,15 @@ Score_t delta_score(Board_t *b, Col_t col, int row, bool player)
         }
 
         // check if we have window 
-            if(cells >= 3) {
-                delta = eval_window(p1_count, p2_count, player);
-                if (delta == 95) return SCORE_MAX;
-                if (delta == -95) return SCORE_MIN;
-                total_delta += delta;
-            }
+        if(cells >= 3) {
+            delta = eval_window(p1_count, p2_count, player);
+            if (delta == 95) return SCORE_MAX;
+            if (delta == -95) return SCORE_MIN;
+            total_delta += delta;
+        }
 
         // counted last 3 cells
-        for (int8_t i = 1; i <= 3; i++) {
+        for (i = 1; i <= 3; i++) {
 
             int8_t c = col + i * dx;
             int8_t r = row + i * dy;
@@ -202,7 +193,6 @@ Score_t delta_score(Board_t *b, Col_t col, int row, bool player)
                         p2_count -= (b->p2[c_del] & m_del) ? 1 : 0;
                     }
 
-                    
                     delta = eval_window(p1_count, p2_count, player);
                     if (delta == 95) return SCORE_MAX;
                     if (delta == -95) return SCORE_MIN;
@@ -220,51 +210,50 @@ Score_t delta_score(Board_t *b, Col_t col, int row, bool player)
 
 ///  Minimax (incremental score) 
 
-Result_t minimax(Board_t *b, int depth, Score_t score, 
+Result_t minimax(Board_t *b, int depth, 
                  bool maximizing, Score_t alpha, Score_t beta)
 {
 
+    // board is full or 0 depth
     if (depth == 0 || board_full(b))
-        return (Result_t){0, score};
+        return (Result_t){0, b->score};
 
     Result_t best;
     best.move = 0;
     best.score = maximizing ? SCORE_MIN : SCORE_MAX;
+    Col_t c;
 
-    for (Col_t c = 0; c < NUM_COLS; c++) {
+    for (c = 0; c < NUM_COLS; c++) {
 
         if (b->height[c] >= NUM_ROWS) continue;
 
-        int row = b->height[c];
+        int8_t row = b->height[c];
 
         // calculate how score will change 
         Score_t delta = delta_score(b, c, row, maximizing);
 
         Result_t r;
 
+        // There is a winning move in 1
         if((delta == SCORE_MAX) & maximizing) {
-            r = (Result_t){0, SCORE_MAX};
+            r = (Result_t){c, SCORE_MAX};
         }
-
         else if((delta == SCORE_MIN) & !maximizing) {
-            r = (Result_t){0, SCORE_MIN};
+            r = (Result_t){c, SCORE_MIN};
         }
 
         else {
             // change board
-            drop_piece(b, c, maximizing);
-            // new score
-            Score_t newScore = score + delta;
+            drop_piece(b, c, maximizing, delta);
 
             // recurse
-            r = minimax(b, depth - 1, newScore,
+            r = minimax(b, depth - 1,
                                 !maximizing, alpha, beta);
 
             // revert board
-            undo_piece(b, c, maximizing);
+            undo_piece(b, c, maximizing, delta);
         }
         
-
         if (maximizing) {
             if (r.score > best.score) {
                 best.score = r.score;
@@ -295,7 +284,6 @@ int main(void)
     uint8_t bot_turn = 0;  // 0 = bot starts, 1 = player starts
     uint8_t turn = 0;  // 0 = first player move, 1 = second player move
     uint8_t input;
-    Score_t score = 0;
     Score_t delta;
     bool first_move = true;
 
@@ -303,9 +291,6 @@ int main(void)
     printf("CONNECT 4\n");
     printf("==========\n\n");
 
-    // Choose who goes first
-    set_rand_seed(__TIME__[7] * 100 + __TIME__[6] * 10 + __TIME__[4]);
-    
 
     // Game loop
     while (1) {
@@ -319,23 +304,22 @@ int main(void)
             
             // First move: play randomly in middle columns (3,4,5)
             if (first_move && bot_turn == 0) {
-                // Random column from center 3 columns (2, 3, 4 in 0-indexed)
-                uint8_t center_cols[3] = {2, 3, 4};
-                bot_move = center_cols[rand_col() % 3];
+                // Random column from center 3 columns (1, 2, 3, 4, 5 in 0-indexed)
+                uint8_t random = (__TIME__[7] - '0') % 5;  
+                bot_move = 1 + random;  
                 printf("Bot plays column %d (opening move)\n", bot_move + 1);
                 first_move = false;
             }
             else {
                 // Use minimax
-                Result_t r = minimax(&board, MAX_DEPTH, score, true, SCORE_MIN, SCORE_MAX);
+                Result_t r = minimax(&board, MAX_DEPTH, true, SCORE_MIN, SCORE_MAX);
                 bot_move = r.move;
                 printf("Bot plays column %d\n", bot_move + 1);
             }
             
             int8_t row = board.height[bot_move];
             delta = delta_score(&board, bot_move, row, true);
-            score += delta;
-            drop_piece(&board, bot_move, true);
+            drop_piece(&board, bot_move, true, delta);
         } 
         else {
             // Player's turn
@@ -355,8 +339,7 @@ int main(void)
             
             int8_t row = board.height[c];
             delta = delta_score(&board, c, row, false);
-            score += delta;
-            drop_piece(&board, c, false);
+            drop_piece(&board, c, false, delta);
             
             first_move = false;  // Player moved, no longer first move
         }
