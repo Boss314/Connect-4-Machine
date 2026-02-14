@@ -1,99 +1,107 @@
-/*
- * displaycontroller.c
- *
- *  Created on: Nov 26, 2025
- *      Author: enrico
- */
-
-
-
-/* this file contains the implementation of the functions that allow the device to write on the 7 segment display, particularly to make a move on the game board.
- * it is accessed by the main application by way of the fn_MAKING_MOVE function
- */
-
-
-#include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 #include "include/displaycontroller.h"
-#include "include/types.h"
-#include "include/sensorsdriver.h"
+#include "LcdDriver/Crystalfontz128x128_ST7735.h"
 #include "include/board.h"
+#include "include/connect4algorithm.h"
+#include "include/sensorsdriver.h"
+#include "include/types.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <ti/devices/msp432p4xx/driverlib/driverlib.h>
+#include <ti/grlib/grlib.h>
 
-// array of the display elements so they can be accessed by indexing with move_to_make
-SevenSegment_t digits[NUM_COLS]={
-                    SEVEN_SEGMENT_ONE,
-                    SEVEN_SEGMENT_TWO,
-                    SEVEN_SEGMENT_THREE,
-                    SEVEN_SEGMENT_FOUR,
-                    SEVEN_SEGMENT_FIVE,
-                    SEVEN_SEGMENT_SIX,
-                    SEVEN_SEGMENT_SEVEN,
-};
+Graphics_Context g_sContext;
 
-// constants for the pins connected to the the clock, latch, and serial data pins of the shift register
-const uint_fast8_t CLOCK_PORT=GPIO_PORT_P3;    const uint_fast16_t CLOCK_PIN=GPIO_PIN5;
-const uint_fast8_t SDATA_PORT=GPIO_PORT_P3;    const uint_fast16_t SDATA_PIN=GPIO_PIN6;
-const uint_fast8_t LATCH_PORT=GPIO_PORT_P3;    const uint_fast16_t LATCH_PIN=GPIO_PIN7;
+void Display_init(void) {
+    // Initializes display
+    Crystalfontz128x128_Init();
 
+    // Set default screen orientation
+    Crystalfontz128x128_SetOrientation(LCD_ORIENTATION_UP);
 
-void fn_MAKING_MOVE(void){
-    //write the move we want to make on the display
-    Display_write(digits[move_to_make]);
+    // Initializes graphics context
+    Graphics_initContext(&g_sContext, &g_sCrystalfontz128x128,
+                         &g_sCrystalfontz128x128_funcs);
+    Graphics_setForegroundColor(&g_sContext, GRAPHICS_COLOR_PURPLE);
+    Graphics_setBackgroundColor(&g_sContext, GRAPHICS_COLOR_WHITE);
+    GrContextFontSet(&g_sContext, &g_sFontFixed6x8);
 
-    //wait for the sensor in that column to detect a move
-    Sensors_request_piece(move_to_make);
-
-    //apply the move we made to the board
-    Board_make_move(&game_board, move_to_make, true);
-
-    //check if the computer won and decide the next state
-    bool winner;
-    bool isfinished=Board_has_won(&game_board, &winner);
-    if(isfinished){
-        if(winner){
-            current_state=STATE_COMPUTER_VICTORY;
-        }else{
-            //some kind of error, the computer just made a move but the player won
-            //Default_Handler();
-        }
-    }else{
-        current_state=STATE_WAITING_FOR_MOVE;
-    }
-
-    //clear the display
-    Display_write(SEVEN_SEGMENT_BLANK);
+    Display_clear();
+    Display_write();
 }
 
+void Display_clear(void) { Graphics_clearDisplay(&g_sContext); }
 
-void Display_write(SevenSegment_t a){
-    int i;
-    for(i=0;i<8;i++){//loop 8 times to transmit 8 bits
-        if(a & (1<<i)){//transmit the value of the bit through the serial data pin
-            GPIO_setOutputHighOnPin(SDATA_PORT, SDATA_PIN);
-        }else{
-            GPIO_setOutputLowOnPin(SDATA_PORT, SDATA_PIN);
-        }
+void Display_printCentered(char *text, int y) {
+    Display_clear();
+    Graphics_drawStringCentered(&g_sContext, (int8_t *)text, AUTO_STRING_LENGTH,
+                                64, y, OPAQUE_TEXT);
 
-        //cycle the clock of the shift register
-        GPIO_setOutputHighOnPin(CLOCK_PORT, CLOCK_PIN);
-        GPIO_setOutputLowOnPin(CLOCK_PORT, CLOCK_PIN);
-    }
-
-    //when were done activate the latch to send the data from the shift register to the output
-    GPIO_setOutputHighOnPin(LATCH_PORT, LATCH_PIN);
-    GPIO_setOutputLowOnPin(LATCH_PORT, LATCH_PIN);
+    // TODO remove delay for 3 seconds
+    //    __delay_cycles(9000000);
 }
 
+void Display_write() {
+    // TODO re initing every call
+    char buffer[11] = "Move to: ";
+    buffer[9] = '0' + (move_to_make + 1);
+    buffer[10] = '\0';
 
-void Display_init(void){
-    //set up the clock, latch, and serial data pins as output and set them all to low
-    GPIO_setAsOutputPin(CLOCK_PORT, CLOCK_PIN);
-    GPIO_setAsOutputPin(SDATA_PORT, SDATA_PIN);
-    GPIO_setAsOutputPin(LATCH_PORT, LATCH_PIN);
+    switch (current_state) {
+    case STATE_INIT:
+        Display_printCentered("Initializing", 60);
+        break;
+    case STATE_WAITING_FOR_MOVE:
+        Display_printCentered("Your Move", 60);
+        break;
+    case STATE_CALCULATING_MOVE:
+        Display_printCentered("Calculating Move", 60);
+        break;
+    case STATE_MAKING_MOVE:
+        Display_printCentered(buffer, 60);
+        break;
+    case STATE_PLAYER_VICTORY:
+        Display_printCentered("You WON!!!", 60);
+        break;
+    case STATE_COMPUTER_VICTORY:
+        Display_printCentered("You Lost :(", 60);
+        break;
+    case STATE_DRAW:
+        Display_printCentered("Draw", 60);
+        break;
+    }
+}
 
-    GPIO_setOutputLowOnPin(CLOCK_PORT, CLOCK_PIN);
-    GPIO_setOutputLowOnPin(SDATA_PORT, SDATA_PIN);
-    GPIO_setOutputLowOnPin(LATCH_PORT, LATCH_PIN);
+void fn_MAKING_MOVE(void) {
 
-    //clear the display
-    Display_write(SEVEN_SEGMENT_BLANK);
+    move_to_make = COL2;
+
+    // write the move we want to make on the display
+    Display_write();
+
+    //  TODO enable
+    //    //wait for the sensor in that column to detect a move
+    //    Sensors_request_piece(move_to_make);
+
+    // apply the move we made to the board
+    int8_t row = game_board.height[move_to_make];
+    Score_t delta = delta_score(&game_board, move_to_make, row, true);
+    Board_make_move(&game_board, move_to_make, true, delta);
+
+    // check if the computer won and decide the next state
+    GameState_t state = Game_winner(delta);
+
+    switch (state) {
+    case GAME_COMPUTER_WON:
+        current_state = STATE_COMPUTER_VICTORY;
+        break;
+    case GAME_PLAYER_WON:
+        current_state = STATE_PLAYER_VICTORY;
+        break;
+    case GAME_DRAW:
+        current_state = STATE_DRAW;
+        break;
+    case GAME_ONGOING:
+        current_state = STATE_WAITING_FOR_MOVE;
+        break;
+    }
 }

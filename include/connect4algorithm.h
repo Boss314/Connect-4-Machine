@@ -15,10 +15,9 @@
 #define SCORE_MIN INT16_MIN
 #define SCORE_MAX INT16_MAX
 
-
 extern State_t current_state;
 extern Move_t move_to_make;
-
+extern Board_t game_board;
 
 typedef struct {
     Col_t move;
@@ -45,6 +44,6 @@ Result_t minimax(Board_t *b, int depth,
 //function that updates the value of move_to_make with the move calculated by the algorithm, puts the machine in its next state, and then returns control to main
 void fn_CALCULATING_MOVE(void);
 
-GameState_t Game_winner(void);
+GameState_t Game_winner(Score_t delta);
 
 #endif /* CONNECT4ALGORITHM_H_ */

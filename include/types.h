@@ -64,13 +64,14 @@ typedef int16_t Score_t;
  * NOTE: the values of the bits in any column[i] field are only defined up to (and not including) the row indicated in next_row[i], all higher
  *       bits should never be considered because they correspond to places where there are no pieces
  */
-typedef struct{
-    Col_t column[NUM_COLS];
-    Row_t next_row[NUM_COLS];
+// board struct changed by Temuulen
+// fixed TODO comments
+typedef struct {
+    uint8_t p1[NUM_COLS];   // bot
+    uint8_t p2[NUM_COLS];   // player
+    uint8_t height[NUM_COLS];
     Score_t score;
 } Board_t;
-
-
 
 
 /* enum type of the various states the device can be in:
@@ -88,6 +89,7 @@ typedef enum {
     STATE_MAKING_MOVE,
     STATE_PLAYER_VICTORY,
     STATE_COMPUTER_VICTORY,
+    STATE_DRAW,
     NUM_STATES
 }State_t;
 
