@@ -188,6 +188,20 @@ void fn_CALCULATING_MOVE(void) {
     //write the waiting indicator on the display
     Display_write();
 
+    // check one move win
+    Col_t c;
+    for (c = 0; c < NUM_COLS; c++) {
+        if (game_board.height[c] >= NUM_ROWS) continue;
+        int8_t row = &game_board.height[c];
+
+        // calculate how score will change 
+        Score_t delta = delta_score(&game_board, c, row, true);
+        if((delta == SCORE_MAX)) {
+            move_to_make = c;
+            current_state=STATE_MAKING_MOVE;
+            break;
+        }
+    }
 
     Result_t r = minimax(&game_board, MAX_DEPTH, true, SCORE_MIN, SCORE_MAX);
     Col_t bot_move = r.move;
