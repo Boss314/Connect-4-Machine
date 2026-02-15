@@ -11,13 +11,16 @@
 #ifndef CONNECT4ALGORITHM_H_
 #define CONNECT4ALGORITHM_H_
 
-#define MAX_DEPTH 6
+
 #define SCORE_MIN INT16_MIN
 #define SCORE_MAX INT16_MAX
+
 
 extern State_t current_state;
 extern Move_t move_to_make;
 extern Board_t game_board;
+
+extern uint8_t MAX_DEPTH;
 
 typedef struct {
     Col_t move;
