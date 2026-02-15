@@ -81,6 +81,7 @@ typedef struct {
  * -STATE_MAKING_MOVE: state the machine is in while it is moving the arm to make the move chosen by the connect 4 algorithm
  * -STATE_PLAYER_VICTORY: state the machine is in when the game is over and the human player has won
  * -STATE_COMPUTER_VICTORY: state the machine is in when the game is over and the computer has won
+ * -STATE_DRAW: state the machine is in when the game is over and neither player has won
  */
 typedef enum {
     STATE_INIT,

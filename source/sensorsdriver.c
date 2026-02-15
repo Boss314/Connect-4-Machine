@@ -150,11 +150,11 @@ void disable_interrupts(){
 
 
 
-/*
+/* function that processes an interrupt caused by a sensor
  * we should detect exactly one move for every time fn_WAITING_FOR_MOVE is called, so all the interrupt routines need mutual exclusion to the move_detected variable and to the Board_t variable
  * to do this we make each interrupt routine disable all the sensor interrupts using disable_interrupts(), so that only one routine can happen at a time
  */
-void process_interrupt(uint_fast8_t port){
+void Sensors_process_interrupt(uint_fast8_t port){
     /* Check which pins generated the interrupts */
     uint_fast16_t status = GPIO_getEnabledInterruptStatus(port);
     /* clear interrupt flag (to clear pending interrupt indicator */
@@ -173,52 +173,4 @@ void process_interrupt(uint_fast8_t port){
 
     //block other sensors from triggering interrupts before returning
     disable_interrupts();
-}
-
-
-// following here are the implementations of the interrupt routines triggered by the sensors
-// each of them just calls the interrupt processing function passing it the port it came from
-
-void PORT2_IRQHandler(void){
-    process_interrupt(GPIO_PORT_P2);
-}
-
-void PORT3_IRQHandler(void){
-    uint_fast16_t status = GPIO_getEnabledInterruptStatus(GPIO_PORT_P3);
-
-    if(status & BIT5){
-        exited=1;
-        GPIO_clearInterruptFlag(GPIO_PORT_P3, status);
-        return;
-    }
-
-    process_interrupt(GPIO_PORT_P3);
-}
-
-void PORT4_IRQHandler(void){
-    process_interrupt(GPIO_PORT_P4);
-}
-
-void PORT5_IRQHandler(void){
-    uint_fast16_t status = GPIO_getEnabledInterruptStatus(GPIO_PORT_P5);
-
-    if(status & BIT1){
-        MAX_DEPTH+=2;
-        if(MAX_DEPTH==8) MAX_DEPTH=2;
-
-        if(current_state==STATE_CALCULATING_MOVE){
-            current_state=STATE_WAITING_FOR_MOVE;
-        }else{
-            current_state=STATE_CALCULATING_MOVE;
-        }
-
-        GPIO_clearInterruptFlag(GPIO_PORT_P5, status);
-        return;
-    }
-
-    process_interrupt(GPIO_PORT_P5);
-}
-
-void PORT6_IRQHandler(void){
-    process_interrupt(GPIO_PORT_P6);
 }

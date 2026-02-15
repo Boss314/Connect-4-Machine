@@ -15,8 +15,6 @@
 extern State_t current_state;
 extern Board_t game_board;
 
-extern int exited;
-extern uint8_t MAX_DEPTH;
 
 /* function that prepares the sensors at the top of the columns and waits for them to detect the human players move
  * the sensors will trigger an interrupt that will update the data structure that holds the current state of the game
@@ -32,5 +30,9 @@ void Sensors_init(void);
 // used by the fn_MAKING_MOVE function
 // Col_t column:    column on which we are requesting a piece to be placed
 void Sensors_request_piece(Col_t column);
+
+// function that processes an interrupt caused by a sensor
+// called by an ISR after it has determined the interrupt comes from a sensor
+void Sensors_process_interrupt(uint_fast8_t port);
 
 #endif /* SENSORSDRIVER_SENSORSDRIVER_H_ */

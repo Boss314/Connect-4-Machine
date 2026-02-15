@@ -20,7 +20,7 @@ extern State_t current_state;
 extern Move_t move_to_make;
 extern Board_t game_board;
 
-extern uint8_t MAX_DEPTH;
+volatile uint8_t MAX_DEPTH;
 
 typedef struct {
     Col_t move;

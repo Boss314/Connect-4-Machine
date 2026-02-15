@@ -192,7 +192,7 @@ void fn_CALCULATING_MOVE(void) {
     Col_t c;
     for (c = 0; c < NUM_COLS; c++) {
         if (game_board.height[c] >= NUM_ROWS) continue;
-        int8_t row = &game_board.height[c];
+        int8_t row = game_board.height[c];
 
         // calculate how score will change 
         Score_t delta = delta_score(&game_board, c, row, true);
