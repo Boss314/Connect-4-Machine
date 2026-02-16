@@ -133,14 +133,10 @@ Result_t minimax(Board_t *b, int depth,
     Col_t c;
 
     for (c = 0; c < NUM_COLS; c++) {
-
         if (b->height[c] >= NUM_ROWS) continue;
-
         int8_t row = b->height[c];
-
         // calculate how score will change 
         Score_t delta = delta_score(b, c, row, maximizing);
-
         Result_t r;
 
         // There is a winning move in 1
@@ -152,15 +148,10 @@ Result_t minimax(Board_t *b, int depth,
         }
 
         else {
-            // change board
-            Board_make_move(b, c, maximizing, delta);
-
-            // recurse
-            r = minimax(b, depth - 1,
-                                !maximizing, alpha, beta);
-
-            // revert board
-            Board_unmake_move(b, c, maximizing, delta);
+            Board_make_move(b, c, maximizing, delta);       // 1. change board
+            r = minimax(b, depth - 1,                       // 2. recurse
+                                !maximizing, alpha, beta);  
+            Board_unmake_move(b, c, maximizing, delta);     // 3. revert board
         }
         
         if (maximizing) {
@@ -182,7 +173,6 @@ Result_t minimax(Board_t *b, int depth,
     return best;
 }
 
-// register bot's next move
 void fn_CALCULATING_MOVE(void) {
 
     //write the waiting indicator on the display
@@ -199,7 +189,7 @@ void fn_CALCULATING_MOVE(void) {
         if((delta == SCORE_MAX)) {
             move_to_make = c;
             current_state=STATE_MAKING_MOVE;
-            break;
+            return;
         }
     }
 
@@ -209,7 +199,7 @@ void fn_CALCULATING_MOVE(void) {
     current_state=STATE_MAKING_MOVE;
 }
 
-// winner function
+
 GameState_t Game_winner(Score_t delta) {
     char msg[16];
     snprintf(msg, sizeof(msg), "delta: %d", delta);
@@ -225,7 +215,7 @@ GameState_t Game_winner(Score_t delta) {
         return GAME_DRAW;
     }
     return GAME_ONGOING;
-}
+}    
 
 
 
