@@ -11,15 +11,6 @@
 #ifndef CONNECT4ALGORITHM_H_
 #define CONNECT4ALGORITHM_H_
 
-/// @brief Minimum and maximum possible heuristic scores.
-/// 
-/// These represent terminal evaluation bounds used by the Minimax
-/// algorithm and alpha–beta pruning.
-/// 
-/// - SCORE_MAX represents a guaranteed win for the computer
-/// - SCORE_MIN represents a guaranteed win for the human player
-#define SCORE_MIN INT16_MIN
-#define SCORE_MAX INT16_MAX
 
 /// @brief Current state of the game state machine.
 /// 
@@ -169,7 +160,7 @@ Score_t delta_score(Board_t *b, Col_t col, int row, bool player);
 /// @return Result_t structure containing:
 ///         - best move (column index)
 ///         - evaluated score of that move
-Result_t minimax(Board_t *b, int depth, 
+Result_t minimax(Board_t *b, int depth,
                  bool maximizing, Score_t alpha, Score_t beta);
 
 /// @brief Determines and registers the computer's next move.

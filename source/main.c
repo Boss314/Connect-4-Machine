@@ -20,7 +20,6 @@ void fn_DRAW(void);
 
 StateMachine_t fsm[] = {
                         {STATE_INIT,fn_INIT},
-//                        {STATE_START, fn_START},
                         {STATE_WAITING_FOR_MOVE,fn_WAITING_FOR_MOVE},
                         {STATE_CALCULATING_MOVE,fn_CALCULATING_MOVE},
                         {STATE_MAKING_MOVE,fn_MAKING_MOVE},

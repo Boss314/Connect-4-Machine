@@ -24,8 +24,6 @@ void PORT3_IRQHandler(void){
         //the interrupt came from a sensor, we process it
         Sensors_process_interrupt(GPIO_PORT_P3);
     }
-
-    Sensors_process_interrupt(GPIO_PORT_P3);
 }
 
 

@@ -29,18 +29,9 @@ typedef Col_t Move_t;
 
 
 //typedef to indicate the rows of the connect 4 board
-// they are defined as powers of 2 so they can be used as bitmasks on the elements of the column field of Board_t
-// NOTE: an actual connect 4 board only has 6 rows
+//an actual connect 4 board only has 6 rows
 typedef uint8_t Row_t;
 #define NUM_ROWS 6
-#define ROW1 (uint8_t)(0x01)
-#define ROW2 (uint8_t)(0x02)
-#define ROW3 (uint8_t)(0x04)
-#define ROW4 (uint8_t)(0x08)
-#define ROW5 (uint8_t)(0x10)
-#define ROW6 (uint8_t)(0x20)
-#define ROW7 (uint8_t)(0x40)
-#define ROW8 (uint8_t)(0x80)
 
 
 // typedef for the datatype used to memorize the score of a particular connect 4 board
@@ -51,21 +42,16 @@ typedef int16_t Score_t;
 
 
 /* struct type to indicate the state of a connect 4 board
- * column: an array of 7 uint8_t used as bitfields, the j-th lowest bit of column[i] identifies the piece present in the j-th row (from the
- *         bottom) of the i-th column (from the left): 1 for pieces belonging to the computer, 0 for pieces belonging to the player
+ *  p1 and p2: arrays of uint8_t elements used as bitfields that correspond to the columns of the connect 4 board, a vaule of 1 represents a place with a piece in it
+ *             the least significant bit represents the lowest piece in that column and the most significant represents the highest
+ *             p1 contains the information about the computer's pieces, p2 about the player's pieces
  *
- * next_row: array of 7 Row_t variables that identify where the next pieces shpuld be placed: next_row[i] is the row where a piece would
- *           fall if it was placed in the i-th column (from the left), it is the lowest row in that column that doesnt have a piece in it,
- *           all lower rows are guaranteed to have pieces in them and all higher rows are guaranteed to be empty
+ *  height:    array that represents the position of the highest piece in a column, all places above the height[i]-th place in the i-th column are blank
+ *             and all other pieces are guaranteed to have a piece in them
  *
- * score: variable that contain the score of the game board's state, used by the minimax algorithm. if the score is the maximum value
- *        then the board is in a state where the computer has won, if the score is the minimum value then the player has won
- *
- * NOTE: the values of the bits in any column[i] field are only defined up to (and not including) the row indicated in next_row[i], all higher
- *       bits should never be considered because they correspond to places where there are no pieces
+ *  score:     Score_t variable used to keep track of how favorable the state the board is in is, used by the algorithm
  */
 // board struct changed by Temuulen
-// fixed TODO comments
 typedef struct {
     uint8_t p1[NUM_COLS];   // bot
     uint8_t p2[NUM_COLS];   // player
@@ -102,6 +88,12 @@ typedef struct{
 } StateMachine_t;
 
 
+/* enum type of the various states the device can be in:
+ * -GAME_COMPUTER_WON: the game is over and has been won by the computer
+ * -GAME_PLAYER_WON: the game is over and has been won by the player
+ * -GAME_DRAW: the game is over because the board is full but neither player has managed to create a line of 4 pieces
+ * -GAME_ONGOING: the game is not yet over
+ */
 typedef enum {
     GAME_COMPUTER_WON,
     GAME_PLAYER_WON, 
@@ -109,32 +101,7 @@ typedef enum {
     GAME_ONGOING
 } GameState_t;
 
-// typedef for the format of a digit/letter as displayed on the 7 segment display, each bit corresponds to a different segment, 1 for on and 0 for off
-typedef uint8_t SevenSegment_t;
-/*  what bits correspond to what segments is determined by the exact wiring of the circuit the display is on, and by the way the bits are inserted in the 74hc595 shift register
- *  the mapping currently looks like this, with 0 being the least significant bit and 7 being the most significant
- *
- *    --5--
- *   |     |
- *   4     6
- *   |     |
- *    --3--
- *   |     |
- *   2     7
- *   |     |
- *    --1--
- */                                                 //76543210
-#define SEVEN_SEGMENT_BLANK         (SevenSegment_t)0b00000000
-#define SEVEN_SEGMENT_ZERO          (SevenSegment_t)0b11110110
-#define SEVEN_SEGMENT_ONE           (SevenSegment_t)0b11000000
-#define SEVEN_SEGMENT_TWO           (SevenSegment_t)0b01101110
-#define SEVEN_SEGMENT_THREE         (SevenSegment_t)0b11101010
-#define SEVEN_SEGMENT_FOUR          (SevenSegment_t)0b11011000
-#define SEVEN_SEGMENT_FIVE          (SevenSegment_t)0b10111010
-#define SEVEN_SEGMENT_SIX           (SevenSegment_t)0b10111110
-#define SEVEN_SEGMENT_SEVEN         (SevenSegment_t)0b11100000
-#define SEVEN_SEGMENT_EIGHT         (SevenSegment_t)0b11111110
-#define SEVEN_SEGMENT_NINE          (SevenSegment_t)0b11111010
+
 
 
 

@@ -135,7 +135,9 @@ void enable_interrupts(){
     }
 
     for(i=0;i<NUM_COLS;i++){ //then enable the interrupts
-        GPIO_enableInterrupt(sensors[i].port, sensors[i].pin);
+        if(game_board.height[sensors[i].column] >= NUM_ROWS){ // do not enable sensors that are placed on full columns
+            GPIO_enableInterrupt(sensors[i].port, sensors[i].pin);
+        }
     }
 }
 
