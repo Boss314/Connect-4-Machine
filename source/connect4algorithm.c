@@ -201,10 +201,6 @@ void fn_CALCULATING_MOVE(void) {
 
 
 GameState_t Game_winner(Score_t delta) {
-    char msg[16];
-    snprintf(msg, sizeof(msg), "delta: %d", delta);
-    Display_printCentered(msg);
-
     if (delta >= 95) {
         return GAME_COMPUTER_WON;
     }
@@ -216,5 +212,3 @@ GameState_t Game_winner(Score_t delta) {
     }
     return GAME_ONGOING;
 }    
-
-

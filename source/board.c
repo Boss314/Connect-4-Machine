@@ -48,7 +48,3 @@ bool Board_full(const Board_t *board)
     }
     return true;
 }
-
-
-
-

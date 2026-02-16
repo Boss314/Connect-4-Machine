@@ -7,7 +7,7 @@
 
 #include "msp.h"
 #include "include/types.h"
-#include<stdbool.h>
+#include <stdbool.h>
 
 // variable that holds the column that the algorithm has decided to make its move into
 // this variable's value gets set by the function fn_CALCULATING_MOVE during the state STATE_CALCULATING_MOVE

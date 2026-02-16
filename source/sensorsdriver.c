@@ -69,6 +69,7 @@ void fn_WAITING_FOR_MOVE(void){
     buffer[12] = '\0';
 
     Display_printCentered(buffer);
+    __delay_cycles(6000000);
 
     switch (state) {
         case GAME_COMPUTER_WON:

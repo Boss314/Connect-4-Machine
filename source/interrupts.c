@@ -1,6 +1,6 @@
 #include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 #include "include/sensorsdriver.h"
-#include<stdbool.h>
+#include <stdbool.h>
 
 extern volatile bool button1_pressed;
 extern volatile bool button2_pressed;
