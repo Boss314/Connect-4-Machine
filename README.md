@@ -62,7 +62,7 @@ The system will alert the player when they have won or lost the game, as well as
 	└── README.md
 	
 ## Video and Presentation
-- [Pitch Video](https://www.youtube.com/watch?v=mvRkMqnd31U)
+- [Pitch Video](https://www.youtube.com/watch?v=KFpp7Sj4rDc)
 - [Presentation](https://docs.google.com/presentation/d/1qTY8_llUPCq2M-b6enmNlHhAITYZlf7NaWkmQ0FVLDs/edit?usp=sharing)
 
 ## Team
