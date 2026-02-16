@@ -17,6 +17,7 @@ The Connect 4 Machine is able to detect where a player places a piece with senso
 ### Software Requirements
 - Code Composer Studio IDE
 - Texas Instruments MSP432 DriverLib Library 
+- Texas Instruments MSP Graphics Library
 
 ## Building Instructions
 ### Assembling
@@ -25,27 +26,37 @@ The Connect 4 Machine is able to detect where a player places a piece with senso
 - Connect the digital output pin of each sensor to the pins designated in source/sensorsdriver.c
 
 ### Compilation and Burning
- - Copy the include/ and source/ directories in a CCS project for the MSP432P401R
+ - Copy the include/ source/ and LcdDriver/ directories in a CCS project for the MSP432P401R
+ - Add DriverLib in the compiler and linker options
+ - Add the graphics library in the linker options
  - Compile and flash the code onto the microcontroller
 
 ## User's Guide
-Upon startup, the connect 4 board should be empty. When it is the player's turn to play, they may place a piece in any column on the board. When it is the computer's turn to play, the program will calculate its move and the player will have to physically place a piece in the corresponding column. The system will prompt the player to make the computer's move via the LCD. 
+Upon startup, the connect 4 board should be empty. The start menu will allow to set the difficulty of the game and decide who will play first: the player or the computer. In the start menu, pressing Button 1 on the BoosterPack changes the current selection and pressing Button 2 accepts the selection and makes the program proceed. 
 
-The system will alert the player when they have won or lost the game, as well as if the game has entered a tie, with the LCD.
+When it is the player's turn to play, they may place a piece in any column on the board. When it is the computer's turn to play, the program will calculate its move and the player will have to physically place a piece in the corresponding column. The system will prompt the player to make the computer's move via the LCD. 
+
+The system will alert the player when they have won or lost the game, as well as if the game has ended in a tie, with the LCD.
 
 ## Project Layout
 	Connect-4-Machine
-	├── include/						# C header files
+	├── LcdDriver/														# display driver library
+	|   ├── Crystalfontz128x128_ST7735.c
+	|   ├── Crystalfontz128x128_ST7735.h
+	|   ├── HAL_MSP_EXP432P401R_Crystalfontz128x128_ST7735.c
+	|   └── HAL_MSP_EXP432P401R_Crystalfontz128x128_ST7735.h	
+	├── include/														# project header files
 	|   ├── board.h
 	|   ├── connect4algorithm.h
 	|   ├── displaycontroller.h
 	|   ├── sensorsdriver.h
 	|   └── types.h
-	├── source/							# C source files
+	├── source/										    				# project source files
 	|   ├── board.c
 	|   ├── connect4algorithm.c
 	|   ├── displaycontroller.c
 	|   ├── globals.c
+	|   ├── interrupts.c
 	|   ├── main.c
 	|   └── sensorsdriver.c
 	└── README.md
@@ -58,4 +69,3 @@ The system will alert the player when they have won or lost the game, as well as
 - Enrico Faa: sensors control code, data structures
 - Temuulen Javkhlanbaatar: connect 4 algorithm code, data structures
 - Munkhdul Dorjderem: LCD display control code
-
