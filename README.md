@@ -68,4 +68,4 @@ The system will alert the player when they have won or lost the game, as well as
 ## Team
 - Enrico Faa: sensors control code, data structures
 - Temuulen Javkhlanbaatar: connect 4 algorithm code, data structures
-- Munkhdul Dorjderem: LCD display control code
+- Munkhdul Dorjderem: LCD display control code, code integration
